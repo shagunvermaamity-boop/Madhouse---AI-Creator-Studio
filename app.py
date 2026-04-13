@@ -1,24 +1,17 @@
 import streamlit as st
 import google.generativeai as genai
 import os
-from youtube_transcript_api import YouTubeTranscriptApi
 
 # Configure Gemini
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 model = genai.GenerativeModel("models/gemini-1.5-flash")
 
-# UI
+st.set_page_config(page_title="Madhouse AI Creator Studio", layout="centered")
+
 st.title("🔥 Madhouse AI Creator Studio")
-st.write("Paste YouTube link → get full content engine")
+st.write("Paste YouTube link → get content engine")
 
 url = st.text_input("Paste YouTube Link")
-
-def get_video_id(url):
-    if "v=" in url:
-        return url.split("v=")[1].split("&")[0]
-    elif "youtu.be/" in url:
-        return url.split("/")[-1]
-    return None
 
 if st.button("Generate Content"):
 
@@ -27,107 +20,90 @@ if st.button("Generate Content"):
     else:
         st.success("🚀 Processing...")
 
-        video_id = get_video_id(url)
+        prompt = f"""
+You are a high-level content strategist.
 
-        try:
-            # Fetch transcript (multi-language)
-            transcript_data = YouTubeTranscriptApi().fetch(video_id, languages=['hi', 'en'])
+Analyze this YouTube video link:
+{url}
 
-            transcript_text = ""
-            for entry in transcript_data:
-                transcript_text += entry.text + " "
+IMPORTANT:
+- You cannot access the video directly
+- Infer content based on typical structure and topic
+- Keep timestamps realistic and sequential
 
-            # Translate to clean English
-            translation_prompt = f"""
-            Convert this transcript into clean English:
+---
 
-            {transcript_text[:4000]}
-            """
+OUTPUT:
 
-            translated = model.generate_content(translation_prompt).text
-
-            # MAIN PROMPT
-            prompt = f"""
-You are an expert content strategist and viral growth operator.
-
-You are given a transcript from a YouTube video.
-
-------------------------
-
-TRANSCRIPT:
-{translated}
-
-------------------------
-
-Follow these rules STRICTLY:
-
-- Use REAL FLOW of content
-- Hooks must be HIGHLY engaging
-- Captions must be viral-ready
-- Blog must be SEO optimized
-
-------------------------
-
-OUTPUT FORMAT:
-
-### 1. SUMMARY
+1. SUMMARY
 - 5–7 bullet points
 
-------------------------
+---
 
-### 2. SHORTS
-
-Create 3 shorts.
+2. SHORTS (5)
 
 Short 1:
 Timestamp:
 Hook:
+Title:
 Caption:
+On-screen text:
 
 Short 2:
 Timestamp:
 Hook:
+Title:
 Caption:
+On-screen text:
 
 Short 3:
 Timestamp:
 Hook:
+Title:
 Caption:
+On-screen text:
 
-------------------------
+Short 4:
+Timestamp:
+Hook:
+Title:
+Caption:
+On-screen text:
 
-### 3. INSTAGRAM POST
+Short 5:
+Timestamp:
+Hook:
+Title:
+Caption:
+On-screen text:
+
+---
+
+3. INSTAGRAM POST
 Caption + hashtags
 
-------------------------
+---
 
-### 4. LINKEDIN POST
-Professional + insight
+4. LINKEDIN POST
+Professional + insight-driven
 
-------------------------
+---
 
-### 5. TWITTER THREAD
-3–5 tweets
+5. TWITTER THREAD
+4–6 tweets
 
-------------------------
+---
 
-### 6. SEO BLOG
-
-Title:
-Meta Description:
-Keywords:
-Article:
+6. SEO BLOG
+Title
+Meta description
+Keywords
+Article (400–600 words)
 """
 
+        try:
             response = model.generate_content(prompt)
-            result = response.text
-
-            # OUTPUT
-            st.subheader("📄 Transcript (English)")
-            st.write(translated)
-
-            st.subheader("🚀 Generated Content")
-            st.write(result)
-
+            st.subheader("🚀 Output")
+            st.write(response.text)
         except Exception as e:
-            st.error("❌ Could not fetch transcript (video may be restricted or no captions)")
+            st.error(f"Error: {e}")
