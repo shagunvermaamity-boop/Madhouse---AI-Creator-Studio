@@ -1,11 +1,8 @@
 import streamlit as st
-import google.generativeai as genai
+from openai import OpenAI
 import os
 
-# Configure API
-genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
-
-model = genai.GenerativeModel("gemini-1.5-flash-latest")
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 st.title("🔥 Madhouse AI Creator Studio")
 st.write("Paste a YouTube link → get full content stack")
@@ -24,12 +21,10 @@ if st.button("Generate Content"):
 
         Input: {url}
 
-        DO NOT download video.
-
-        Generate the following clearly structured:
+        Generate:
 
         ===== TRANSCRIPT =====
-        A detailed summary of the video
+        Detailed summary of the video
 
         ===== SHORTS =====
         Create 5 shorts:
@@ -60,7 +55,7 @@ if st.button("Generate Content"):
         Caption:
 
         ===== INSTAGRAM =====
-        Viral caption with emojis and hashtags
+        Viral caption with emojis + hashtags
 
         ===== LINKEDIN =====
         Professional post
@@ -76,14 +71,15 @@ if st.button("Generate Content"):
         - Full article
         """
 
-        response = model.generate_content(prompt)
-        result = response.text
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[{"role": "user", "content": prompt}]
+        )
 
-        # Display clean sections
+        result = response.choices[0].message.content
 
         st.subheader("📄 Transcript")
-        if "===== TRANSCRIPT =====" in result:
-            st.write(result.split("===== TRANSCRIPT =====")[1].split("===== SHORTS =====")[0])
+        st.write(result.split("===== SHORTS =====")[0])
 
         st.subheader("🎬 Shorts")
         if "===== SHORTS =====" in result:
