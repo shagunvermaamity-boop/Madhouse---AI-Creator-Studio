@@ -24,22 +24,20 @@ if st.button("Generate Content"):
 
     if not url:
         st.error("Please enter a link")
-
     else:
         st.success("🚀 Processing...")
 
         video_id = get_video_id(url)
 
         try:
-            transcript_data = YouTubeTranscriptApi.get_transcript(video_id)
+            transcript_data = YouTubeTranscriptApi().fetch(video_id)
 
-            # Build transcript text + timestamps
             transcript_text = ""
             timestamps = []
 
             for entry in transcript_data:
-                time = round(entry["start"])
-                text = entry["text"]
+                time = round(entry.start)
+                text = entry.text
 
                 transcript_text += text + " "
                 timestamps.append(f"{time}s: {text}")
@@ -52,7 +50,7 @@ if st.button("Generate Content"):
             Based on this transcript:
             {transcript_preview}
 
-            Use REAL FLOW from transcript.
+            Follow REAL FLOW.
 
             -----------
 
@@ -61,29 +59,17 @@ if st.button("Generate Content"):
 
             -----------
 
-            2. SHORTS (based on timestamps)
+            2. SHORTS (3)
 
-            Create 3 shorts:
-
-            Short 1:
-            Timestamp:
-            Hook:
-            Caption:
-
-            Short 2:
-            Timestamp:
-            Hook:
-            Caption:
-
-            Short 3:
-            Timestamp:
-            Hook:
-            Caption:
+            Each short must have:
+            Timestamp
+            Hook (very engaging)
+            Caption
 
             -----------
 
             3. INSTAGRAM
-            Viral caption with hashtags
+            Viral caption + hashtags
 
             -----------
 
@@ -109,12 +95,12 @@ if st.button("Generate Content"):
 
             # OUTPUT
 
-            st.subheader("📄 Transcript (Real)")
+            st.subheader("📄 Transcript Preview")
             st.write(transcript_preview)
 
-            st.subheader("🎬 Shorts")
+            st.subheader("🧠 AI Output")
             st.write(result)
 
         except Exception as e:
-            st.error("Could not fetch transcript. Video may not have captions.")
-            st.error(e)
+            st.error("❌ This video has no captions OR is restricted")
+            st.stop()
