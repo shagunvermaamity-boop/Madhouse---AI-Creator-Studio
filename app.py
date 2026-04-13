@@ -1,102 +1,120 @@
 import streamlit as st
-from openai import OpenAI
+import google.generativeai as genai
 import os
+from youtube_transcript_api import YouTubeTranscriptApi
 
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+# Configure Gemini
+genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
+model = genai.GenerativeModel("models/gemini-1.5-flash")
 
+# UI
 st.title("🔥 Madhouse AI Creator Studio")
-st.write("Paste a YouTube link → get full content stack")
+st.write("Paste YouTube link → get real content engine")
 
 url = st.text_input("Paste YouTube Link")
+
+def get_video_id(url):
+    if "v=" in url:
+        return url.split("v=")[1].split("&")[0]
+    elif "youtu.be/" in url:
+        return url.split("/")[-1]
+    return None
 
 if st.button("Generate Content"):
 
     if not url:
         st.error("Please enter a link")
+
     else:
         st.success("🚀 Processing...")
 
-        prompt = f"""
-        You are an AI content engine.
+        video_id = get_video_id(url)
 
-        Input: {url}
+        try:
+            transcript_data = YouTubeTranscriptApi.get_transcript(video_id)
 
-        Generate:
+            # Build transcript text + timestamps
+            transcript_text = ""
+            timestamps = []
 
-        ===== TRANSCRIPT =====
-        Detailed summary of the video
+            for entry in transcript_data:
+                time = round(entry["start"])
+                text = entry["text"]
 
-        ===== SHORTS =====
-        Create 5 shorts:
+                transcript_text += text + " "
+                timestamps.append(f"{time}s: {text}")
 
-        Short 1:
-        Timestamp:
-        Hook:
-        Caption:
+            transcript_preview = " ".join(transcript_text.split()[:300])
 
-        Short 2:
-        Timestamp:
-        Hook:
-        Caption:
+            prompt = f"""
+            You are an expert content strategist.
 
-        Short 3:
-        Timestamp:
-        Hook:
-        Caption:
+            Based on this transcript:
+            {transcript_preview}
 
-        Short 4:
-        Timestamp:
-        Hook:
-        Caption:
+            Use REAL FLOW from transcript.
 
-        Short 5:
-        Timestamp:
-        Hook:
-        Caption:
+            -----------
 
-        ===== INSTAGRAM =====
-        Viral caption with emojis + hashtags
+            1. SUMMARY
+            Bullet points
 
-        ===== LINKEDIN =====
-        Professional post
+            -----------
 
-        ===== TWITTER =====
-        3 engaging tweets (thread style)
+            2. SHORTS (based on timestamps)
 
-        ===== BLOG =====
-        SEO optimized blog:
-        - Title
-        - Meta description
-        - Keywords
-        - Full article
-        """
+            Create 3 shorts:
 
-        response = client.chat.completions.create(
-            model="gpt-4o-mini",
-            messages=[{"role": "user", "content": prompt}]
-        )
+            Short 1:
+            Timestamp:
+            Hook:
+            Caption:
 
-        result = response.choices[0].message.content
+            Short 2:
+            Timestamp:
+            Hook:
+            Caption:
 
-        st.subheader("📄 Transcript")
-        st.write(result.split("===== SHORTS =====")[0])
+            Short 3:
+            Timestamp:
+            Hook:
+            Caption:
 
-        st.subheader("🎬 Shorts")
-        if "===== SHORTS =====" in result:
-            st.write(result.split("===== SHORTS =====")[1].split("===== INSTAGRAM =====")[0])
+            -----------
 
-        st.subheader("📸 Instagram")
-        if "===== INSTAGRAM =====" in result:
-            st.write(result.split("===== INSTAGRAM =====")[1].split("===== LINKEDIN =====")[0])
+            3. INSTAGRAM
+            Viral caption with hashtags
 
-        st.subheader("💼 LinkedIn")
-        if "===== LINKEDIN =====" in result:
-            st.write(result.split("===== LINKEDIN =====")[1].split("===== TWITTER =====")[0])
+            -----------
 
-        st.subheader("🐦 Twitter")
-        if "===== TWITTER =====" in result:
-            st.write(result.split("===== TWITTER =====")[1].split("===== BLOG =====")[0])
+            4. LINKEDIN
+            Professional post
 
-        st.subheader("📝 Blog (SEO)")
-        if "===== BLOG =====" in result:
-            st.write(result.split("===== BLOG =====")[1])
+            -----------
+
+            5. TWITTER
+            3 tweets
+
+            -----------
+
+            6. BLOG (SEO)
+            Title
+            Meta description
+            Keywords
+            Article
+            """
+
+            response = model.generate_content(prompt)
+            result = response.text
+
+            # OUTPUT
+
+            st.subheader("📄 Transcript (Real)")
+            st.write(transcript_preview)
+
+            st.subheader("🎬 Shorts")
+            st.write(result)
+
+        except Exception as e:
+            st.error("Could not fetch transcript. Video may not have captions.")
+            st.error(e)
