@@ -5,8 +5,8 @@ import os
 # Configure API
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
-# Use stable model
-model = genai.GenerativeModel("gemini-1.5-pro")
+# Stable working model
+model = genai.GenerativeModel("gemini-pro")
 
 st.set_page_config(page_title="Madhouse AI Creator Studio", layout="centered")
 
@@ -30,9 +30,9 @@ Analyze this YouTube video link:
 
 IMPORTANT:
 - You cannot access the video directly
-- Infer content intelligently based on title/topic
+- Infer content intelligently based on topic
 - Keep timestamps realistic and sequential
-- Create HIGH QUALITY output (not generic)
+- Make hooks VERY engaging
 
 ---
 
