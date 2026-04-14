@@ -2,9 +2,11 @@ import streamlit as st
 import google.generativeai as genai
 import os
 
-# Configure Gemini
+# Configure API
 genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
-model = genai.GenerativeModel("models/gemini-1.5-flash")
+
+# Use stable model
+model = genai.GenerativeModel("gemini-1.5-pro")
 
 st.set_page_config(page_title="Madhouse AI Creator Studio", layout="centered")
 
@@ -28,19 +30,20 @@ Analyze this YouTube video link:
 
 IMPORTANT:
 - You cannot access the video directly
-- Infer content based on typical structure and topic
+- Infer content intelligently based on title/topic
 - Keep timestamps realistic and sequential
+- Create HIGH QUALITY output (not generic)
 
 ---
 
 OUTPUT:
 
-1. SUMMARY
+### 1. SUMMARY
 - 5–7 bullet points
 
 ---
 
-2. SHORTS (5)
+### 2. SHORTS (5)
 
 Short 1:
 Timestamp:
@@ -79,22 +82,22 @@ On-screen text:
 
 ---
 
-3. INSTAGRAM POST
+### 3. INSTAGRAM POST
 Caption + hashtags
 
 ---
 
-4. LINKEDIN POST
+### 4. LINKEDIN POST
 Professional + insight-driven
 
 ---
 
-5. TWITTER THREAD
+### 5. TWITTER THREAD
 4–6 tweets
 
 ---
 
-6. SEO BLOG
+### 6. SEO BLOG
 Title
 Meta description
 Keywords
@@ -105,5 +108,6 @@ Article (400–600 words)
             response = model.generate_content(prompt)
             st.subheader("🚀 Output")
             st.write(response.text)
+
         except Exception as e:
             st.error(f"Error: {e}")
